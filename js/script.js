@@ -9,3 +9,19 @@ Nettisivu, napit muutamalle leffateatterille, pyydä niillä ehdoilla leffan nim
 näytösaika.
 
 Ota selvää voiko kuvat tehdä jotenkin hienosti. (vissiin voi)
+*/
+
+document.addEventListener('DOMContentLoaded'), () =>
+
+    async function fetchMoviesAndSchedule(theaterId, date) {
+        const params = new URLSearchParams({
+            area: theaterId,
+            dt: date // Format: dd.mm.yyyy
+        });
+
+        const apiUrl = `API_URL/schedule?${params.toString()}`;
+
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        return data;
+    }
