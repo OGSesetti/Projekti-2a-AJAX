@@ -70,6 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     function selector() {
+        //ensin tyhjennetään aiemman hakutulokset
+        listContainer.innerHTML = "";
         //otetaan valittu teatteri dropdown-menusta ja pyydetään sen ID
         let selectedTheatre = document.getElementById("locationMenu").value;
         console.log("Selected theatre:", selectedTheatre);
@@ -148,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
     function reset() {
+        //pelkkä sivun refresh. Ei kovin tyylikäs mutta toimii.
         location.reload();
     }
 
