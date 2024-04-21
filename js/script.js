@@ -87,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
             //etsitään oikea nimi
             if (theatreCellName === theatreName) {
                 let theatreID = theatreCell.querySelector("ID").textContent;
-                console.log("Selected location ID:", theatreID);
                 return theatreID;
             }
         };
@@ -148,7 +147,10 @@ document.addEventListener("DOMContentLoaded", () => {
         eventDiv.style.marginBottom = "8px";
 
     }
-
+    function reset() {
+        listContainerLocation.splice(0, listContainerLocation.length);
+        listLocation.innerHTML = "";
+    }
 
 
 
