@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     document.getElementById("locationMenu").addEventListener("change", selector);
-
+    document.getElementById("reset").addEventListener("click", reset);
 
     function menuLoader(list) {
 
@@ -148,8 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
     function reset() {
-        listContainerLocation.splice(0, listContainerLocation.length);
-        listLocation.innerHTML = "";
+        location.reload();
     }
 
 
