@@ -17,47 +17,38 @@ funktio:(location numero) etsi location numerolla tapahtumat
 
 */
 //Lataillaan tiedot sijainneista ja tapahtumista
-document.addEventListener('DOMContentLoaded', () => {
-    const locations = 'https://www.finnkino.fi/xml/TheatreAreas/';
-    const events = 'https://www.finnkino.fi/xml/Schedule/';
+document.addEventListener("DOMContentLoaded", () => {
+    const areaURL = "https://www.finnkino.fi/xml/TheatreAreas/";
+    const scheduleURL = "https://www.finnkino.fi/xml/Schedule/";
+    const scheduleURLArea = "https://www.finnkino.fi/xml/Schedule/?area=";
+    const eventURLArea = "https://www.finnkino.fi/xml/Events/";
+
     const parser = new DOMParser();
-    const listLocation = document.getElementById("listContainer");
-    let locationsList;
+    const listContainerLocation = document.getElementById("listContainer");
+    let locationsList = [];
     let name;
     const menuLocation = document.getElementById("locationMenu");
+    let eventList = [];
+    let selectedLocationData;
+    let selectedTheatre;
 
-
-
-    fetch(locations)
+    fetch(areaURL)
         .then(response => response.text())
-        .then(xmlData => {
-            const xmlDoc = parser.parseFromString(xmlData, "text/xml");
-            locationsList = xmlDoc.getElementsByTagName("TheatreArea");
+        .then(xmlLocationData => {
+            const xmlLocationDoc = parser.parseFromString(xmlLocationData, "text/xml");
+            locationsList = xmlLocationDoc.getElementsByTagName("TheatreArea");
         })
-
-
         .then(() => {
-
             menuLoader(locationsList);
+            //   console.log(locationsList);
             console.log("Location fetch successful");
         })
-
-
         .catch(error => {
-            console.error('Error fetching data', error);
+            console.error('Error fetching location data', error);
         });
 
-    fetch(events)
-        .then(response => response.text())
-        .then(xmlData => {
-            const eventsList = parser.parseFromString(xmlData, "text/xml").getElementsByTagName("Show");
-            console.log("Event fetch successful");
-        })
-        .catch(error => {
-            console.error('Error fetching data', error);
-        })
 
-
+    document.getElementById("locationMenu").addEventListener("change", selector);
 
 
     function menuLoader(list) {
@@ -67,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
             menuCreator(variable)
         }
     }
-
     function menuCreator(variable) {
         const nameElement = variable.querySelector("Name");
         const selectOption = document.createElement("option");
@@ -77,70 +67,87 @@ document.addEventListener('DOMContentLoaded', () => {
         menuLocation.appendChild(selectOption);
     }
 
-    function locationSelected() {
-        const selectedLocation = document.getElementById("locationMenu").value;
-        const selectedLocationData = findLocationData(selectedLocation);
-        if (selectedLocationData) {
-            console.log("Valittu sijainti:", selectedLocationData);
-        } else {
-            console.error("Sijainnin tietoja ei löytynyt:", selectedLocation);
-        }
+
+
+    function selector() {
+        //otetaan valittu teatteri dropdown-menusta ja pyydetään sen ID
+        let selectedTheatre = document.getElementById("locationMenu").value;
+        console.log("Selected theatre:", selectedTheatre);
+        areaID = findID(selectedTheatre);
+        console.log("Area ID:", areaID);
+        eventFetcher(areaID);
+        // dataCollector(areaID);
     }
 
-    function findLocationData(locationName) {
-        // Käy läpi eventList ja etsi sijainti sen nimen perusteella
-        // Palauta sijainnin tiedot, jos se löytyy, muuten palauta null
-        for (let i = 0; i < eventList.length; i++) {
-            const eventData = eventList[i];
-            if (eventData.location === locationName) {
-                return eventData;
+
+    function findID(theatreName) {
+        for (let i = 0; i < locationsList.length; i++) {
+            let theatreCell = locationsList[i];
+            let theatreCellName = theatreCell.querySelector("Name").textContent;
+            //etsitään oikea nimi
+            if (theatreCellName === theatreName) {
+                let theatreID = theatreCell.querySelector("ID").textContent;
+                console.log("Selected location ID:", theatreID);
+                return theatreID;
             }
-        }
-        return null; // Sijaintia ei löytynyt eventLististä
+        };
+        console.log("ID finder failure");
     }
 
+    function eventFetcher(areaID) {
+        let fetchURL = scheduleURLArea + areaID;
+        fetch(fetchURL)
+            .then(response => response.text())
+            .then(xmlEventData => {
+                const xmlEventDoc = parser.parseFromString(xmlEventData, "text/xml");
+                eventList = xmlEventDoc.getElementsByTagName("Show");
+                //   console.log(eventList);
+                console.log("Event fetch successful");
+                dataPrinter(eventList, areaID)
+            })
+            .catch(error => {
+                console.error('Error fetching event data', error);
+            })
+    }
 
-
-    function elementLoader(list) {
-
+    function dataPrinter(list) {
+        //käytetään kerättyä ID:tä ja tulostetaan tietoja element creatorilla
         for (let i = 0; i < list.length; i++) {
-            let variable = list[i];
-            elementCreator(variable)
+            let currentCell = list[i];
+            let title = currentCell.querySelector("Title").textContent;
+            let location = currentCell.querySelector("TheatreAndAuditorium").textContent;
+            let time = currentCell.querySelector("dttmShowStart").textContent;
+            elementCreator(title, location, time);
         }
-    }
 
-    function elementCreator(variable) {
-        let newElement = document.createElement("div");
-        const nameElement = variable.querySelector("Name");
-        newElement.textContent = nameElement.textContent;
-        newElement.classList.add("Location");
+        //console.log("Data printing failure (lol)");
+        return null;
 
-        let checkButton = document.createElement("button");
-        checkButton.textContent = "Valitse";
-        checkButton.classList.add("check-button");
-        //checkButton.addEventListener("click", function () {
-        //checkButton.classList.toggle("checked");
-        //  task.done = !task.done;
-        // localStorage.setItem("tasks", JSON.stringify(tasksArray));
-
-        listLocation.appendChild(checkButton);
-        listLocation.appendChild(newElement);
     }
 
 
+    function elementCreator(title, location, time) {
+        const eventDiv = document.createElement("div");
+        eventDiv.classList.add("event");
+        const titleDiv = document.createElement("div");
+        titleDiv.textContent = title;
 
+        const locationDiv = document.createElement("div");
+        locationDiv.textContent = location;
 
+        const timeDiv = document.createElement("div");
+        timeDiv.textContent = time;
 
+        // Append title, location, and time divs to the event div
+        eventDiv.appendChild(titleDiv);
+        eventDiv.appendChild(locationDiv);
+        eventDiv.appendChild(timeDiv);
 
+        listContainerLocation.appendChild(eventDiv);
+        eventDiv.style.marginTop = "8px";
+        eventDiv.style.marginBottom = "8px";
 
-
-
-
-
-
-
-
-
+    }
 
 
 
