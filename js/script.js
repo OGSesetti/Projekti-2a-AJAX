@@ -1,27 +1,10 @@
-/*
-Käytä linkkejä:
-http://www.finnkino.fi/xmlLinks to an external site.
-http://www.finnkino.fi/xml/Schedule/
-http://www.omdbapi.com/Links to an external site. (kuvat?)
-https://github.com/public-apis/public-apis?tab=readme-ov-file#anime (saattaa olla hyödyllinen)
 
-Nettisivu, napit muutamalle leffateatterille, pyydä niillä ehdoilla leffan nimi, kuvat?, ja
-näytösaika.
-
-Ota selvää voiko kuvat tehdä jotenkin hienosti. (vissiin voi)
-
-kerää data
-parse
-tallenna arvoihin
-funktio:(location numero) etsi location numerolla tapahtumat
-
-*/
-//Lataillaan tiedot sijainneista ja tapahtumista
+//Lataillaan tiedot sijainneista
 document.addEventListener("DOMContentLoaded", () => {
     const areaURL = "https://www.finnkino.fi/xml/TheatreAreas/";
-    const scheduleURL = "https://www.finnkino.fi/xml/Schedule/";
+    //const scheduleURL = "https://www.finnkino.fi/xml/Schedule/";
     const scheduleURLArea = "https://www.finnkino.fi/xml/Schedule/?area=";
-    const eventURLArea = "https://www.finnkino.fi/xml/Events/";
+    // const eventURLArea = "https://www.finnkino.fi/xml/Events/";
 
     const parser = new DOMParser();
     const listContainerLocation = document.getElementById("listContainer");
@@ -86,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let i = 0; i < locationsList.length; i++) {
             let theatreCell = locationsList[i];
             let theatreCellName = theatreCell.querySelector("Name").textContent;
-            //etsitään oikea nimi
             if (theatreCellName === theatreName) {
                 let theatreID = theatreCell.querySelector("ID").textContent;
                 return theatreID;
@@ -96,13 +78,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function eventFetcher(areaID) {
+        //tehdään url-osoite joka sisältää areaID:n ja haetaan sen tiedot
         let fetchURL = scheduleURLArea + areaID;
         fetch(fetchURL)
             .then(response => response.text())
             .then(xmlEventData => {
                 const xmlEventDoc = parser.parseFromString(xmlEventData, "text/xml");
                 eventList = xmlEventDoc.getElementsByTagName("Show");
-                //   console.log(eventList);
                 console.log("Event fetch successful");
                 dataPrinter(eventList, areaID)
             })
@@ -120,8 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
             let time = currentCell.querySelector("dttmShowStart").textContent;
             elementCreator(title, location, time);
         }
-
-        //console.log("Data printing failure (lol)");
         return null;
 
     }
